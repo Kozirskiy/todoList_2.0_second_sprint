@@ -2,6 +2,7 @@ import './App.css'
 import {useState} from 'react'
 import {v1} from 'uuid'
 import {TodolistItem} from './TodolistItem'
+import {CreateItemForm} from "./CreateItemForm.tsx";
 
 export type Task = {
     id: string
@@ -75,8 +76,30 @@ export const App = () => {
     }
 
 
+    // const createTodolist = (title: string) => {
+    //     const newTodolist: Todolist = {id: v1(), title, filter: 'all'}
+    //     setTodolists([newTodolist, ...todolists])
+    //     setTasks({...tasks, [todolistId]: []})
+    // }
+
+    const createTodolist = (title: string) => {
+        const todolistId = v1()
+        const newTodolist: Todolist = {id: todolistId, title, filter: 'all'}
+        setTodolists([newTodolist, ...todolists])
+        setTasks({ ...tasks, [todolistId]: [] })
+    }
+
+    const changeTaskTitle = (todolistId: string, taskId: string, title: string) => {
+        setTasks({...tasks, [todolistId]: tasks[todolistId].map(task => task.id === taskId ? {...task, title} : task )})
+    }
+
+    const changeTodolistTitle = (todolistId: string, title: string) => {
+        setTodolists(todolists.map(todolist => todolist.id === todolistId ? { ...todolist, title } : todolist))
+    }
     return (
         <div className="app">
+
+            <CreateItemForm onCreateItem={createTodolist}/>
             {todolists.map(todolist => {
 
                 const todolistTasks = tasks[todolist.id]
@@ -98,6 +121,8 @@ export const App = () => {
                                   createTask={createTask}
                                   changeTaskStatus={changeTaskStatus}
                                   deleteTodolist={deleteTodolist}
+                                  changeTaskTitle={changeTaskTitle}
+                                  changeTodolistTitle={changeTodolistTitle}
                     />
                 )
             })}
