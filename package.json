@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "uuid": "11.0.3"
@@ -22,5 +26,6 @@
     "typescript": "5.7.2",
     "vite": "6.0.6",
     "vitest": "2.1.8"
-  }
+  },
+  "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538"
 }
