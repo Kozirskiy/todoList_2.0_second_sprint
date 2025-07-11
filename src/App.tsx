@@ -1,5 +1,5 @@
 import './App.css'
-import {useState} from 'react'
+import {useReducer, useState} from 'react'
 import {v1} from 'uuid'
 import {TodolistItem} from './components/TodolistItem.tsx'
 import {CreateItemForm} from "./CreateItemForm.tsx";
@@ -16,7 +16,14 @@ import {containerSx} from "./components/TodolistItem.styles.ts.tsx";
 import {NavButton} from './components/NavButton.ts'
 import Switch from '@mui/material/Switch'
 import CssBaseline from '@mui/material/CssBaseline'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+import {createTheme, ThemeProvider} from '@mui/material/styles'
+import {
+    changeTodolistFilterAC,
+    changeTodolistTitleAC,
+    createTodolistAC,
+    deleteTodolistAC,
+    todolistsReducer
+} from "./model/todolistsReducer.ts";
 
 export type Task = {
     id: string
@@ -56,7 +63,7 @@ export const App = () => {
         setThemeMode(themeMode === 'light' ? 'dark' : 'light')
     }
 
-    const [todolists, setTodolists] = useState<Todolist[]>([
+    const [todolists, dispatchToTodolists] = useReducer(todolistsReducer, [
 
         {id: todolistId1, title: 'Whatto learn', filter: 'all'},
         {id: todolistId2, title: 'Whatto buy', filter: 'all'}
@@ -76,53 +83,53 @@ export const App = () => {
             {id: v1(), title: 'Flat', isDone: false},
         ]
     })
+    const changeFilter = (todolistId: string, filter: FilterValues) => {
 
+        dispatchToTodolists(changeTodolistFilterAC({id: todolistId, filter}))
+
+    }
 
     const deleteTask = (taskId: string, todolistId: string) => {
         setTasks({...tasks, [todolistId]: tasks[todolistId].filter(task => task.id !== taskId)})
     }
 
-    const changeFilter = (todolistId: string, filter: FilterValues) => {
-        setTodolists(todolists.map(todolist => todolist.id === todolistId ? {
-            ...todolist, filter
-        } : todolist))
+    const createTodolist = (title: string) => {
+        const action = createTodolistAC(title)
+        dispatchToTodolists(action)
+        setTasks({...tasks, [action.payload.id]: []})
     }
-
-
     const createTask = (todolistId: string, title: string) => {
         const newTask = {id: v1(), title, isDone: false}
         setTasks({...tasks, [todolistId]: [newTask, ...tasks[todolistId]]})
     }
 
-
     const changeTaskStatus = (todolistId: string, taskId: string, isDone: boolean) => {
         setTasks({...tasks, [todolistId]: tasks[todolistId].map(task => task.id === taskId ? {...task, isDone} : task)})
     }
-    const deleteTodolist = (todolistId: string) => {
-        setTodolists(todolists.filter(todolist => todolist.id !== todolistId))
-        delete tasks[todolistId]
-        setTasks({...tasks})
-    }
+    ///////////
 
-    const createTodolist = (title: string) => {
-        const todolistId = v1()
-        const newTodolist: Todolist = {id: todolistId, title, filter: 'all'}
-        setTodolists([newTodolist, ...todolists])
-        setTasks({...tasks, [todolistId]: []})
+    const deleteTodolist = (todolistId: string) => {
+
+        dispatchToTodolists(deleteTodolistAC(todolistId))
+        const  copy = {...tasks}
+        delete copy[todolistId]
+        setTasks(copy)
     }
+    ///////////////
+
 
     const changeTaskTitle = (todolistId: string, taskId: string, title: string) => {
         setTasks({...tasks, [todolistId]: tasks[todolistId].map(task => task.id === taskId ? {...task, title} : task)})
     }
 
     const changeTodolistTitle = (todolistId: string, title: string) => {
-        setTodolists(todolists.map(todolist => todolist.id === todolistId ? {...todolist, title} : todolist))
+        dispatchToTodolists(changeTodolistTitleAC({id: todolistId, title}))
     }
     return (
         <div className="app">
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
-                <AppBar position="static" sx={{ mb: '30px' }}>
+                <AppBar position="static" sx={{mb: '30px'}}>
                     <Toolbar>
                         <Container maxWidth={'lg'} sx={containerSx}>
                             <IconButton color="inherit">
@@ -132,7 +139,7 @@ export const App = () => {
                                 <NavButton>Sign in</NavButton>
                                 <NavButton>Sign up</NavButton>
                                 <NavButton background={theme.palette.primary.dark}>Faq</NavButton>
-                                <Switch color={'default'} onChange={changeMode} />
+                                <Switch color={'default'} onChange={changeMode}/>
                             </div>
                         </Container>
                     </Toolbar>
@@ -142,7 +149,7 @@ export const App = () => {
                         <CreateItemForm onCreateItem={createTodolist}/>
                     </Grid>
                     <Grid container spacing={4}>
-                        {todolists.map(todolist => {
+                        {todolists!.map(todolist => {
 
                             const todolistTasks = tasks[todolist.id]
 
@@ -155,7 +162,7 @@ export const App = () => {
                             }
                             return (
                                 <Grid key={todolist.id}>
-                                    <Paper sx={{ p: '0 20px 20px 20px' }}>
+                                    <Paper sx={{p: '0 20px 20px 20px'}}>
                                         <TodolistItem key={todolist.id}
                                                       todolistId={todolist.id}
                                                       todolist={todolist}
@@ -178,8 +185,6 @@ export const App = () => {
 
                 </Container>
             </ThemeProvider>
-
-
 
 
         </div>
